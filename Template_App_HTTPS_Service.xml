@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zabbix_export>
-    <version>3.4</version>
-    <date>2018-06-11T15:22:56Z</date>
+    <version>5.0</version>
+    <date>2020-06-19T19:06:19Z</date>
     <groups>
         <group>
             <name>Active Hosts</name>
@@ -14,7 +14,6 @@
         <template>
             <template>Template App HTTPS Service</template>
             <name>Template App HTTPS Service</name>
-            <description/>
             <groups>
                 <group>
                     <name>Active Hosts</name>
@@ -31,34 +30,10 @@
             <items>
                 <item>
                     <name>HTTPS service is running</name>
-                    <type>3</type>
-                    <snmp_community/>
-                    <snmp_oid/>
-                    <key>net.tcp.service[tcp,,443]</key>
-                    <delay>1m</delay>
+                    <type>SIMPLE</type>
+                    <key>net.tcp.service[https]</key>
                     <history>1w</history>
-                    <trends>365d</trends>
-                    <status>0</status>
-                    <value_type>3</value_type>
-                    <allowed_hosts/>
-                    <units/>
-                    <snmpv3_contextname/>
-                    <snmpv3_securityname/>
-                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
-                    <snmpv3_authprotocol>0</snmpv3_authprotocol>
-                    <snmpv3_authpassphrase/>
-                    <snmpv3_privprotocol>0</snmpv3_privprotocol>
-                    <snmpv3_privpassphrase/>
-                    <params/>
-                    <ipmi_sensor/>
-                    <authtype>0</authtype>
-                    <username/>
-                    <password/>
-                    <publickey/>
-                    <privatekey/>
-                    <port/>
-                    <description>Not https since we have a problem with libcurl in debian8 and Zabbix using TLS 1.0</description>
-                    <inventory_link>0</inventory_link>
+                    <status>DISABLED</status>
                     <applications>
                         <application>
                             <name>HTTPS service</name>
@@ -67,487 +42,240 @@
                     <valuemap>
                         <name>Service state</name>
                     </valuemap>
-                    <logtimefmt/>
-                    <preprocessing/>
-                    <jmx_endpoint/>
-                    <master_item/>
+                    <triggers>
+                        <trigger>
+                            <expression>{max(#3)}=0</expression>
+                            <name>HTTPS service is down on {HOST.NAME}</name>
+                            <priority>AVERAGE</priority>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>HTTPS service is running</name>
+                    <type>SIMPLE</type>
+                    <key>net.tcp.service[tcp,,443]</key>
+                    <history>1w</history>
+                    <status>DISABLED</status>
+                    <description>Not https since we have a problem with libcurl in debian8 and Zabbix using TLS 1.0</description>
+                    <applications>
+                        <application>
+                            <name>HTTPS service</name>
+                        </application>
+                    </applications>
+                    <valuemap>
+                        <name>Service state</name>
+                    </valuemap>
+                    <triggers>
+                        <trigger>
+                            <expression>{max(#3)}=0</expression>
+                            <name>HTTPS service is down on {HOST.NAME}</name>
+                            <priority>AVERAGE</priority>
+                        </trigger>
+                    </triggers>
                 </item>
                 <item>
                     <name>SSL HTTPS certificate digest mode</name>
-                    <type>10</type>
-                    <snmp_community/>
-                    <snmp_oid/>
-                    <key>ssltls.check[{HOST.CONN}:443,native,digestmode]</key>
+                    <type>EXTERNAL</type>
+                    <key>ssltls.check[{HOST.DNS}:443,native,digestmode]</key>
                     <delay>1h</delay>
-                    <history>90d</history>
                     <trends>0</trends>
-                    <status>0</status>
-                    <value_type>1</value_type>
-                    <allowed_hosts/>
-                    <units/>
-                    <snmpv3_contextname/>
-                    <snmpv3_securityname/>
-                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
-                    <snmpv3_authprotocol>0</snmpv3_authprotocol>
-                    <snmpv3_authpassphrase/>
-                    <snmpv3_privprotocol>0</snmpv3_privprotocol>
-                    <snmpv3_privpassphrase/>
-                    <params/>
-                    <ipmi_sensor/>
-                    <authtype>0</authtype>
-                    <username/>
-                    <password/>
-                    <publickey/>
-                    <privatekey/>
-                    <port/>
-                    <description/>
-                    <inventory_link>0</inventory_link>
+                    <value_type>CHAR</value_type>
                     <applications>
                         <application>
                             <name>HTTPS service</name>
                         </application>
                     </applications>
-                    <valuemap/>
-                    <logtimefmt/>
-                    <preprocessing/>
-                    <jmx_endpoint/>
-                    <master_item/>
+                    <triggers>
+                        <trigger>
+                            <expression>{str(sha1)}=1</expression>
+                            <name>HTTPS certificate is using sha1</name>
+                            <priority>INFO</priority>
+                            <dependencies>
+                                <dependency>
+                                    <name>HTTPS certificate on {HOST.NAME} is using sha1 and expires after 1.Jan.2017</name>
+                                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.DNS}:443,native,digestmode].str(sha1)}=1 and ( {Template App HTTPS Service:ssltls.check[{HOST.DNS}:443,native,enddate].str(2017)}=1 or  {Template App HTTPS Service:ssltls.check[{HOST.DNS}:443,native,enddate].str(2018)}=1 or  {Template App HTTPS Service:ssltls.check[{HOST.DNS}:443,native,enddate].str(2019)}=1 or  {Template App HTTPS Service:ssltls.check[{HOST.DNS}:443,native,enddate].str(2020)}=1)</expression>
+                                </dependency>
+                                <dependency>
+                                    <name>HTTPS SSL not running on host {HOST.NAME}</name>
+                                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.DNS}:443,native,simple].last()}=0</expression>
+                                </dependency>
+                            </dependencies>
+                        </trigger>
+                    </triggers>
                 </item>
                 <item>
                     <name>SSL HTTPS certificate end date</name>
-                    <type>10</type>
-                    <snmp_community/>
-                    <snmp_oid/>
-                    <key>ssltls.check[{HOST.CONN}:443,native,enddate]</key>
+                    <type>EXTERNAL</type>
+                    <key>ssltls.check[{HOST.DNS}:443,native,enddate]</key>
                     <delay>1h</delay>
-                    <history>90d</history>
                     <trends>0</trends>
-                    <status>0</status>
-                    <value_type>1</value_type>
-                    <allowed_hosts/>
-                    <units/>
-                    <snmpv3_contextname/>
-                    <snmpv3_securityname/>
-                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
-                    <snmpv3_authprotocol>0</snmpv3_authprotocol>
-                    <snmpv3_authpassphrase/>
-                    <snmpv3_privprotocol>0</snmpv3_privprotocol>
-                    <snmpv3_privpassphrase/>
-                    <params/>
-                    <ipmi_sensor/>
-                    <authtype>0</authtype>
-                    <username/>
-                    <password/>
-                    <publickey/>
-                    <privatekey/>
-                    <port/>
-                    <description/>
-                    <inventory_link>0</inventory_link>
+                    <value_type>CHAR</value_type>
                     <applications>
                         <application>
                             <name>HTTPS service</name>
                         </application>
                     </applications>
-                    <valuemap/>
-                    <logtimefmt/>
-                    <preprocessing/>
-                    <jmx_endpoint/>
-                    <master_item/>
                 </item>
                 <item>
                     <name>SSL HTTPS certificate time until expire</name>
-                    <type>10</type>
-                    <snmp_community/>
-                    <snmp_oid/>
-                    <key>ssltls.check[{HOST.CONN}:443,native,lifetime]</key>
+                    <type>EXTERNAL</type>
+                    <key>ssltls.check[{HOST.DNS}:443,native,lifetime]</key>
                     <delay>1h</delay>
-                    <history>90d</history>
-                    <trends>365d</trends>
-                    <status>0</status>
-                    <value_type>0</value_type>
-                    <allowed_hosts/>
+                    <value_type>FLOAT</value_type>
                     <units>s</units>
-                    <snmpv3_contextname/>
-                    <snmpv3_securityname/>
-                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
-                    <snmpv3_authprotocol>0</snmpv3_authprotocol>
-                    <snmpv3_authpassphrase/>
-                    <snmpv3_privprotocol>0</snmpv3_privprotocol>
-                    <snmpv3_privpassphrase/>
-                    <params/>
-                    <ipmi_sensor/>
-                    <authtype>0</authtype>
-                    <username/>
-                    <password/>
-                    <publickey/>
-                    <privatekey/>
-                    <port/>
-                    <description/>
-                    <inventory_link>0</inventory_link>
                     <applications>
                         <application>
                             <name>HTTPS service</name>
                         </application>
                     </applications>
-                    <valuemap/>
-                    <logtimefmt/>
-                    <preprocessing/>
-                    <jmx_endpoint/>
-                    <master_item/>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}&lt;0</expression>
+                            <name>HTTPS certificate on {HOSTNAME} expired  (Since {ITEM.LASTVALUE}d)</name>
+                            <priority>DISASTER</priority>
+                            <dependencies>
+                                <dependency>
+                                    <name>HTTPS SSL not running on host {HOST.NAME}</name>
+                                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.DNS}:443,native,simple].last()}=0</expression>
+                                </dependency>
+                            </dependencies>
+                        </trigger>
+                        <trigger>
+                            <expression>{last()}&lt;604800</expression>
+                            <name>HTTPS certificate on {HOSTNAME} less than 7 days  (Remaing {ITEM.LASTVALUE}d)</name>
+                            <priority>HIGH</priority>
+                            <dependencies>
+                                <dependency>
+                                    <name>HTTPS certificate on {HOSTNAME} expired  (Since {ITEM.LASTVALUE}d)</name>
+                                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.DNS}:443,native,lifetime].last()}&lt;0</expression>
+                                </dependency>
+                                <dependency>
+                                    <name>HTTPS SSL not running on host {HOST.NAME}</name>
+                                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.DNS}:443,native,simple].last()}=0</expression>
+                                </dependency>
+                            </dependencies>
+                        </trigger>
+                        <trigger>
+                            <expression>{last()}&lt;1296000</expression>
+                            <name>HTTPS certificate on {HOSTNAME} less than 15 days  (Remaing {ITEM.LASTVALUE}d)</name>
+                            <priority>AVERAGE</priority>
+                            <dependencies>
+                                <dependency>
+                                    <name>HTTPS certificate on {HOSTNAME} less than 7 days  (Remaing {ITEM.LASTVALUE}d)</name>
+                                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.DNS}:443,native,lifetime].last()}&lt;604800</expression>
+                                </dependency>
+                                <dependency>
+                                    <name>HTTPS SSL not running on host {HOST.NAME}</name>
+                                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.DNS}:443,native,simple].last()}=0</expression>
+                                </dependency>
+                            </dependencies>
+                        </trigger>
+                        <trigger>
+                            <expression>{last()}&lt;2505600</expression>
+                            <name>HTTPS certificate on {HOSTNAME} less than 29 days (Remaing {ITEM.LASTVALUE}d)</name>
+                            <priority>WARNING</priority>
+                            <dependencies>
+                                <dependency>
+                                    <name>HTTPS certificate on {HOSTNAME} less than 15 days  (Remaing {ITEM.LASTVALUE}d)</name>
+                                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.DNS}:443,native,lifetime].last()}&lt;1296000</expression>
+                                </dependency>
+                                <dependency>
+                                    <name>HTTPS SSL not running on host {HOST.NAME}</name>
+                                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.DNS}:443,native,simple].last()}=0</expression>
+                                </dependency>
+                            </dependencies>
+                        </trigger>
+                    </triggers>
                 </item>
                 <item>
                     <name>SSL HTTPS certificate running</name>
-                    <type>10</type>
-                    <snmp_community/>
-                    <snmp_oid/>
-                    <key>ssltls.check[{HOST.CONN}:443,native,simple]</key>
+                    <type>EXTERNAL</type>
+                    <key>ssltls.check[{HOST.DNS}:443,native,simple]</key>
                     <delay>6m</delay>
-                    <history>90d</history>
-                    <trends>365d</trends>
-                    <status>0</status>
-                    <value_type>3</value_type>
-                    <allowed_hosts/>
-                    <units/>
-                    <snmpv3_contextname/>
-                    <snmpv3_securityname/>
-                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
-                    <snmpv3_authprotocol>0</snmpv3_authprotocol>
-                    <snmpv3_authpassphrase/>
-                    <snmpv3_privprotocol>0</snmpv3_privprotocol>
-                    <snmpv3_privpassphrase/>
-                    <params/>
-                    <ipmi_sensor/>
-                    <authtype>0</authtype>
-                    <username/>
-                    <password/>
-                    <publickey/>
-                    <privatekey/>
-                    <port/>
-                    <description/>
-                    <inventory_link>0</inventory_link>
                     <applications>
                         <application>
                             <name>HTTPS service</name>
                         </application>
                     </applications>
-                    <valuemap/>
-                    <logtimefmt/>
                     <preprocessing>
                         <step>
-                            <type>6</type>
+                            <type>BOOL_TO_DECIMAL</type>
                             <params/>
                         </step>
                     </preprocessing>
-                    <jmx_endpoint/>
-                    <master_item/>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}=0</expression>
+                            <name>HTTPS SSL not running on host {HOST.NAME}</name>
+                            <priority>HIGH</priority>
+                            <dependencies>
+                                <dependency>
+                                    <name>HTTPS service is down on {HOST.NAME}</name>
+                                    <expression>{Template App HTTPS Service:net.tcp.service[tcp,,443].max(#3)}=0</expression>
+                                </dependency>
+                            </dependencies>
+                        </trigger>
+                    </triggers>
                 </item>
                 <item>
                     <name>SSL HTTPS sslv3 poodle vulnerable</name>
-                    <type>10</type>
-                    <snmp_community/>
-                    <snmp_oid/>
-                    <key>ssltls.check[{HOST.CONN}:443,native,ssl3]</key>
+                    <type>EXTERNAL</type>
+                    <key>ssltls.check[{HOST.DNS}:443,native,ssl3]</key>
                     <delay>6m</delay>
-                    <history>90d</history>
-                    <trends>365d</trends>
-                    <status>1</status>
-                    <value_type>3</value_type>
-                    <allowed_hosts/>
-                    <units/>
-                    <snmpv3_contextname/>
-                    <snmpv3_securityname/>
-                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
-                    <snmpv3_authprotocol>0</snmpv3_authprotocol>
-                    <snmpv3_authpassphrase/>
-                    <snmpv3_privprotocol>0</snmpv3_privprotocol>
-                    <snmpv3_privpassphrase/>
-                    <params/>
-                    <ipmi_sensor/>
-                    <authtype>0</authtype>
-                    <username/>
-                    <password/>
-                    <publickey/>
-                    <privatekey/>
-                    <port/>
-                    <description/>
-                    <inventory_link>0</inventory_link>
+                    <status>DISABLED</status>
                     <applications>
                         <application>
                             <name>HTTPS service</name>
                         </application>
                     </applications>
-                    <valuemap/>
-                    <logtimefmt/>
                     <preprocessing>
                         <step>
-                            <type>6</type>
+                            <type>BOOL_TO_DECIMAL</type>
                             <params/>
                         </step>
                     </preprocessing>
-                    <jmx_endpoint/>
-                    <master_item/>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}=1</expression>
+                            <name>SSL certificate on {HOSTNAME} HTTPS ssl3 poodle vulnerable</name>
+                            <priority>WARNING</priority>
+                            <dependencies>
+                                <dependency>
+                                    <name>HTTPS SSL not running on host {HOST.NAME}</name>
+                                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.DNS}:443,native,simple].last()}=0</expression>
+                                </dependency>
+                            </dependencies>
+                        </trigger>
+                    </triggers>
                 </item>
                 <item>
                     <name>SSL HTTPS certificate start date</name>
-                    <type>10</type>
-                    <snmp_community/>
-                    <snmp_oid/>
-                    <key>ssltls.check[{HOST.CONN}:443,native,startdate]</key>
+                    <type>EXTERNAL</type>
+                    <key>ssltls.check[{HOST.DNS}:443,native,startdate]</key>
                     <delay>1h</delay>
-                    <history>90d</history>
                     <trends>0</trends>
-                    <status>0</status>
-                    <value_type>1</value_type>
-                    <allowed_hosts/>
-                    <units/>
-                    <snmpv3_contextname/>
-                    <snmpv3_securityname/>
-                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
-                    <snmpv3_authprotocol>0</snmpv3_authprotocol>
-                    <snmpv3_authpassphrase/>
-                    <snmpv3_privprotocol>0</snmpv3_privprotocol>
-                    <snmpv3_privpassphrase/>
-                    <params/>
-                    <ipmi_sensor/>
-                    <authtype>0</authtype>
-                    <username/>
-                    <password/>
-                    <publickey/>
-                    <privatekey/>
-                    <port/>
-                    <description/>
-                    <inventory_link>0</inventory_link>
+                    <value_type>CHAR</value_type>
                     <applications>
                         <application>
                             <name>HTTPS service</name>
                         </application>
                     </applications>
-                    <valuemap/>
-                    <logtimefmt/>
-                    <preprocessing/>
-                    <jmx_endpoint/>
-                    <master_item/>
                 </item>
             </items>
-            <discovery_rules/>
-            <httptests/>
-            <macros/>
-            <templates/>
-            <screens/>
         </template>
     </templates>
     <triggers>
         <trigger>
-            <expression>{Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,digestmode].str(sha1)}=1</expression>
-            <recovery_mode>0</recovery_mode>
-            <recovery_expression/>
-            <name>HTTPS certificate is using sha1</name>
-            <correlation_mode>0</correlation_mode>
-            <correlation_tag/>
-            <url/>
-            <status>0</status>
-            <priority>1</priority>
-            <description/>
-            <type>0</type>
-            <manual_close>0</manual_close>
-            <dependencies>
-                <dependency>
-                    <name>HTTPS certificate on {HOST.NAME} is using sha1 and expires after 1.Jan.2017</name>
-                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,digestmode].str(sha1)}=1 and ( {Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,enddate].str(2017)}=1 or  {Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,enddate].str(2018)}=1 or  {Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,enddate].str(2019)}=1 or  {Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,enddate].str(2020)}=1)</expression>
-                    <recovery_expression/>
-                </dependency>
-                <dependency>
-                    <name>HTTPS SSL not running on host {HOST.NAME}</name>
-                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,simple].last()}=0</expression>
-                    <recovery_expression/>
-                </dependency>
-            </dependencies>
-            <tags/>
-        </trigger>
-        <trigger>
-            <expression>{Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,digestmode].str(sha1)}=1 and ( {Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,enddate].str(2017)}=1 or  {Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,enddate].str(2018)}=1 or  {Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,enddate].str(2019)}=1 or  {Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,enddate].str(2020)}=1)</expression>
-            <recovery_mode>0</recovery_mode>
-            <recovery_expression/>
+            <expression>{Template App HTTPS Service:ssltls.check[{HOST.DNS}:443,native,digestmode].str(sha1)}=1 and ( {Template App HTTPS Service:ssltls.check[{HOST.DNS}:443,native,enddate].str(2017)}=1 or  {Template App HTTPS Service:ssltls.check[{HOST.DNS}:443,native,enddate].str(2018)}=1 or  {Template App HTTPS Service:ssltls.check[{HOST.DNS}:443,native,enddate].str(2019)}=1 or  {Template App HTTPS Service:ssltls.check[{HOST.DNS}:443,native,enddate].str(2020)}=1)</expression>
             <name>HTTPS certificate on {HOST.NAME} is using sha1 and expires after 1.Jan.2017</name>
-            <correlation_mode>0</correlation_mode>
-            <correlation_tag/>
             <url>http://googleonlinesecurity.blogspot.ch/2014/09/gradually-sunsetting-sha-1.html</url>
-            <status>0</status>
-            <priority>2</priority>
-            <description/>
-            <type>0</type>
-            <manual_close>0</manual_close>
+            <priority>WARNING</priority>
             <dependencies>
                 <dependency>
                     <name>HTTPS SSL not running on host {HOST.NAME}</name>
-                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,simple].last()}=0</expression>
-                    <recovery_expression/>
+                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.DNS}:443,native,simple].last()}=0</expression>
                 </dependency>
             </dependencies>
-            <tags/>
-        </trigger>
-        <trigger>
-            <expression>{Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,lifetime].last()}&lt;0</expression>
-            <recovery_mode>0</recovery_mode>
-            <recovery_expression/>
-            <name>HTTPS certificate on {HOSTNAME} expired  (Since {ITEM.LASTVALUE}d)</name>
-            <correlation_mode>0</correlation_mode>
-            <correlation_tag/>
-            <url/>
-            <status>0</status>
-            <priority>5</priority>
-            <description/>
-            <type>0</type>
-            <manual_close>0</manual_close>
-            <dependencies>
-                <dependency>
-                    <name>HTTPS SSL not running on host {HOST.NAME}</name>
-                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,simple].last()}=0</expression>
-                    <recovery_expression/>
-                </dependency>
-            </dependencies>
-            <tags/>
-        </trigger>
-        <trigger>
-            <expression>{Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,lifetime].last()}&lt;604800</expression>
-            <recovery_mode>0</recovery_mode>
-            <recovery_expression/>
-            <name>HTTPS certificate on {HOSTNAME} less than 7 days  (Remaing {ITEM.LASTVALUE}d)</name>
-            <correlation_mode>0</correlation_mode>
-            <correlation_tag/>
-            <url/>
-            <status>0</status>
-            <priority>4</priority>
-            <description/>
-            <type>0</type>
-            <manual_close>0</manual_close>
-            <dependencies>
-                <dependency>
-                    <name>HTTPS certificate on {HOSTNAME} expired  (Since {ITEM.LASTVALUE}d)</name>
-                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,lifetime].last()}&lt;0</expression>
-                    <recovery_expression/>
-                </dependency>
-                <dependency>
-                    <name>HTTPS SSL not running on host {HOST.NAME}</name>
-                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,simple].last()}=0</expression>
-                    <recovery_expression/>
-                </dependency>
-            </dependencies>
-            <tags/>
-        </trigger>
-        <trigger>
-            <expression>{Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,lifetime].last()}&lt;1296000</expression>
-            <recovery_mode>0</recovery_mode>
-            <recovery_expression/>
-            <name>HTTPS certificate on {HOSTNAME} less than 15 days  (Remaing {ITEM.LASTVALUE}d)</name>
-            <correlation_mode>0</correlation_mode>
-            <correlation_tag/>
-            <url/>
-            <status>0</status>
-            <priority>3</priority>
-            <description/>
-            <type>0</type>
-            <manual_close>0</manual_close>
-            <dependencies>
-                <dependency>
-                    <name>HTTPS certificate on {HOSTNAME} less than 7 days  (Remaing {ITEM.LASTVALUE}d)</name>
-                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,lifetime].last()}&lt;604800</expression>
-                    <recovery_expression/>
-                </dependency>
-                <dependency>
-                    <name>HTTPS SSL not running on host {HOST.NAME}</name>
-                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,simple].last()}=0</expression>
-                    <recovery_expression/>
-                </dependency>
-            </dependencies>
-            <tags/>
-        </trigger>
-        <trigger>
-            <expression>{Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,lifetime].last()}&lt;2505600</expression>
-            <recovery_mode>0</recovery_mode>
-            <recovery_expression/>
-            <name>HTTPS certificate on {HOSTNAME} less than 29 days (Remaing {ITEM.LASTVALUE}d)</name>
-            <correlation_mode>0</correlation_mode>
-            <correlation_tag/>
-            <url/>
-            <status>0</status>
-            <priority>2</priority>
-            <description/>
-            <type>0</type>
-            <manual_close>0</manual_close>
-            <dependencies>
-                <dependency>
-                    <name>HTTPS certificate on {HOSTNAME} less than 15 days  (Remaing {ITEM.LASTVALUE}d)</name>
-                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,lifetime].last()}&lt;1296000</expression>
-                    <recovery_expression/>
-                </dependency>
-                <dependency>
-                    <name>HTTPS SSL not running on host {HOST.NAME}</name>
-                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,simple].last()}=0</expression>
-                    <recovery_expression/>
-                </dependency>
-            </dependencies>
-            <tags/>
-        </trigger>
-        <trigger>
-            <expression>{Template App HTTPS Service:net.tcp.service[tcp,,443].max(#3)}=0</expression>
-            <recovery_mode>0</recovery_mode>
-            <recovery_expression/>
-            <name>HTTPS service is down on {HOST.NAME}</name>
-            <correlation_mode>0</correlation_mode>
-            <correlation_tag/>
-            <url/>
-            <status>0</status>
-            <priority>3</priority>
-            <description/>
-            <type>0</type>
-            <manual_close>0</manual_close>
-            <dependencies/>
-            <tags/>
-        </trigger>
-        <trigger>
-            <expression>{Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,simple].last()}=0</expression>
-            <recovery_mode>0</recovery_mode>
-            <recovery_expression/>
-            <name>HTTPS SSL not running on host {HOST.NAME}</name>
-            <correlation_mode>0</correlation_mode>
-            <correlation_tag/>
-            <url/>
-            <status>0</status>
-            <priority>4</priority>
-            <description/>
-            <type>0</type>
-            <manual_close>0</manual_close>
-            <dependencies>
-                <dependency>
-                    <name>HTTPS service is down on {HOST.NAME}</name>
-                    <expression>{Template App HTTPS Service:net.tcp.service[tcp,,443].max(#3)}=0</expression>
-                    <recovery_expression/>
-                </dependency>
-            </dependencies>
-            <tags/>
-        </trigger>
-        <trigger>
-            <expression>{Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,ssl3].last()}=1</expression>
-            <recovery_mode>0</recovery_mode>
-            <recovery_expression/>
-            <name>SSL certificate on {HOSTNAME} HTTPS ssl3 poodle vulnerable</name>
-            <correlation_mode>0</correlation_mode>
-            <correlation_tag/>
-            <url/>
-            <status>0</status>
-            <priority>2</priority>
-            <description/>
-            <type>0</type>
-            <manual_close>0</manual_close>
-            <dependencies>
-                <dependency>
-                    <name>HTTPS SSL not running on host {HOST.NAME}</name>
-                    <expression>{Template App HTTPS Service:ssltls.check[{HOST.CONN}:443,native,simple].last()}=0</expression>
-                    <recovery_expression/>
-                </dependency>
-            </dependencies>
-            <tags/>
         </trigger>
     </triggers>
     <value_maps>

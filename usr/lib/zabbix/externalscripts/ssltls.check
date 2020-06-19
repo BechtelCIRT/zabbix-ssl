@@ -120,8 +120,8 @@ if [ $# -ne 3 ]; then
  exit 1
 fi
 
-LOC="en_GB.UTF8"
-export LC_ALL=$LOC
+#LOC="en_US.UTF8"
+#export LC_ALL=$LOC
 
 # assign arguments to variables
 #

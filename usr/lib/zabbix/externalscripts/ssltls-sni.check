@@ -126,8 +126,8 @@ if [ $# -ne 4 ]; then
     exit 1
 fi
 
-LOC="POSIX"
-export LC_ALL=$LOC
+#LOC="POSIX"
+#export LC_ALL=$LOC
 
 OSTYPE="$(uname)"
 
